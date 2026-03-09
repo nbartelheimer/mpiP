@@ -217,14 +217,25 @@ void mpiPi_stats_mt_cs_gather(mpiPi_mt_stat_t *mt_state,
 {
   mpiPi_stats_thr_cs_gather(&mt_state->rank_stats, ac, av);
 }
-
+#ifdef WITH_PAPI
+void mpiPi_stats_mt_cs_upd (mpiPi_mt_stat_tls_t *hndl,
+                            unsigned op, unsigned rank, void **pc,
+                            double dur, double sendSize, double ioSize,
+                            double rmaSize, long long llc_cnt)
+#else
 void mpiPi_stats_mt_cs_upd (mpiPi_mt_stat_tls_t *hndl,
                             unsigned op, unsigned rank, void **pc,
                             double dur, double sendSize, double ioSize,
                             double rmaSize)
+#endif
 {
+#ifdef WITH_PAPI
+  mpiPi_stats_thr_cs_upd(hndl->tls_ptr, op, rank, pc, dur,
+                         sendSize, ioSize, rmaSize, llc_cnt);
+#else
   mpiPi_stats_thr_cs_upd(hndl->tls_ptr, op, rank, pc, dur,
                          sendSize, ioSize, rmaSize);
+#endif
 }
 
 void mpiPi_stats_mt_cs_lookup(mpiPi_mt_stat_t *stat,

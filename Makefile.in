@@ -43,6 +43,7 @@ SRCS =	diag_msgs.c \
 	mpiP-mt-stats.c \
 	mpiP-tslist.c \
 	glob.c \
+	mpiPi_papi.c \
 	mpiP-wrappers.c \
 	wrappers_special.c \
 	mpiPi.c \
@@ -247,8 +248,14 @@ endif
 #  parallel builds tend to fail.
 .NOTPARALLEL:
 
+USE_PAPI = @USE_PAPI@
+ifeq ($(USE_PAPI), yes)
+mpiP-wrappers.c symbols.h lookup.c mpiPi_def.h: mpi.protos.txt make-wrappers-with-papi.py
+	$(PYTHON) $(srcdir)/make-wrappers-with-papi.py $(MAKE_WRAPPERS_ARGS) --arch=$(ARCH) --f77symbol $(F77_SYMBOLS) $^
+else
 mpiP-wrappers.c symbols.h lookup.c mpiPi_def.h: mpi.protos.txt make-wrappers.py
 	$(PYTHON) $(srcdir)/make-wrappers.py $(MAKE_WRAPPERS_ARGS) --arch=$(ARCH) --f77symbol $(F77_SYMBOLS) $^
+endif
 
 ifeq ($(ENABLE_API_ONLY), no)
 ${OBJS}: mpiPconfig.h mpiPi.h mpiPi_def.h mpiPi_proto.h symbols.h mpip_timers.h

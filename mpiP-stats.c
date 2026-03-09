@@ -189,11 +189,19 @@ int mpiPi_stats_thr_is_on(mpiPi_thread_stat_t *stat)
   return !(stat->disabled) && mpiPi.enabled;
 }
 
+#ifdef WITH_PAPI
+void
+mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
+                           unsigned op, unsigned rank, void **pc,
+                           double dur, double sendSize, double ioSize,
+                           double rmaSize, long long llc_cnt)
+#else
 void
 mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
                            unsigned op, unsigned rank, void **pc,
                            double dur, double sendSize, double ioSize,
                            double rmaSize)
+#endif
 {
   int i;
   callsite_stats_t *csp = NULL;
@@ -222,9 +230,13 @@ mpiPi_stats_thr_cs_upd (mpiPi_thread_stat_t *stat,
       h_insert (stat->cs_stats, csp);
     }
   /* ASSUME: csp cannot be deleted from list */
+#ifdef WITH_PAPI
+  mpiPi_cs_update(csp, dur, sendSize, ioSize, rmaSize,
+                  mpiPi.messageCountThreshold, llc_cnt);
+#else
   mpiPi_cs_update(csp, dur, sendSize, ioSize, rmaSize,
                   mpiPi.messageCountThreshold);
-
+#endif
 #if 0
   mpiPi_msg_debug ("mpiPi.messageCountThreshold is %d\n",
                    mpiPi.messageCountThreshold);

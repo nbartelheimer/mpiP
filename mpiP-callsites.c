@@ -13,6 +13,7 @@
 */
 
 #include <string.h>
+#include <limits.h>
 #include "mpiP-callsites.h"
 #include "mpiPi.h"
 
@@ -25,12 +26,19 @@ void mpiPi_cs_reset_stat(callsite_stats_t *csp)
   csp->minIO = DBL_MAX;
   csp->maxDataSent = 0;
   csp->minDataSent = DBL_MAX;
+#ifdef WITH_PAPI
+  csp->minLLC = LLONG_MAX;
+  csp->maxLLC = 0;
+#endif
 
   csp->count = 0;
   csp->cumulativeTime = 0;
   csp->cumulativeTimeSquared = 0;
   csp->cumulativeDataSent = 0;
   csp->cumulativeIO = 0;
+#ifdef WITH_PAPI
+  csp->cumulativeLLC = 0;
+#endif
 
   csp->arbitraryMessageCount = 0;
 }
@@ -48,10 +56,15 @@ void mpiPi_cs_init(callsite_stats_t *csp, void *pc[],
   csp->cookie = MPIP_CALLSITE_STATS_COOKIE;
   mpiPi_cs_reset_stat(csp);
 }
-
+#ifdef WITH_PAPI
+void mpiPi_cs_update(callsite_stats_t *csp, double dur,
+                     double sendSize, double ioSize, double rmaSize,
+                     double threshold, long long llc_cnt)
+#else
 void mpiPi_cs_update(callsite_stats_t *csp, double dur,
                      double sendSize, double ioSize, double rmaSize,
                      double threshold)
+#endif
 {
   csp->count++;
   csp->cumulativeTime += dur;
@@ -63,6 +76,11 @@ void mpiPi_cs_update(callsite_stats_t *csp, double dur,
   csp->cumulativeDataSent += sendSize;
   csp->cumulativeIO += ioSize;
   csp->cumulativeRMA += rmaSize;
+#ifdef WITH_PAPI
+  csp->cumulativeLLC += llc_cnt;
+  csp->maxLLC = max(csp->maxLLC,llc_cnt);
+  csp->minLLC = min(csp->minLLC,llc_cnt);
+#endif
 
   csp->maxDataSent = max (csp->maxDataSent, sendSize);
   csp->minDataSent = min (csp->minDataSent, sendSize);
@@ -96,6 +114,11 @@ void mpiPi_cs_merge(callsite_stats_t *dst, callsite_stats_t *src)
   dst->cumulativeIO += src->cumulativeIO;
   dst->cumulativeRMA += src->cumulativeRMA;
   dst->arbitraryMessageCount += src->arbitraryMessageCount;
+#ifdef WITH_PAPI
+  dst->cumulativeLLC += src->cumulativeLLC;
+  dst->maxLLC = max(dst->maxLLC,src->maxLLC);
+  dst->minLLC = min(dst->minLLC,src->minLLC);
+#endif
 }
 
 /*

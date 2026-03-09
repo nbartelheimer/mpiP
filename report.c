@@ -1017,6 +1017,91 @@ mpiPi_print_top_rma_sites (FILE * fp)
     }
 }
 
+#ifdef WITH_PAPI
+static void
+mpiPi_print_all_callsite_llc_info (FILE * fp)
+/*  Print Sent Data Section  */
+{
+  int i, ac;
+  char buf[256];
+  callsite_stats_t **av;
+  const char *fmt_str[2] = {"%-17s %4d %4d %7lld %9lld %9lld %9lld %9lld\n","%-17s %4d %4s %7lld %9lld %9lld %9lld %9lld\n"};
+
+  if (mpiPi.global_mpi_size > 0)
+    {
+      h_gather_data (mpiPi.global_callsite_stats, &ac, (void ***) &av);
+
+      /* -- now that we have all the statistics in a queue, which is
+       * pointers to the data, we can sort it however we need to.
+       */
+      qsort (av, ac, sizeof (void *), callsite_sort_by_name_id_rank);
+
+      sprintf (buf, "Callsite Message LLC Miss statistics (all, sent bytes, miss counts)");
+      print_section_heading (fp, buf);
+      fprintf (fp, "%-17s %4s %4s %7s %9s %9s %9s %9s\n", "Name", "Site",
+               "Rank", "Count", "Max", "Mean", "Min", "Sum");
+
+      {
+        long long sCount = 0;
+        double sMin = DBL_MAX;
+        double sMax = 0;
+        double sCumulative = 0;
+        int lastcsid = 0;
+
+        for (i = 0; i < ac; i++)
+          {
+            //if (i != 0 && sCumulative > 0 && (av[i]->csid != av[i - 1]->csid))
+            //  {
+            //    fprintf (fp,
+            //        fmt_str[1],
+            //        &(mpiPi.lookup[av[i - 1]->op - mpiPi_BASE].name[4]),
+            //        av[i - 1]->csid, "*", sCount, sMax,
+            //        sCumulative / sCount, sMin, sCumulative);
+
+            //    sCount = 0;
+            //    sMax = 0;
+            //    sMin = DBL_MAX;
+            //    sCumulative = 0;
+            //  }
+
+            if (av[i]->cumulativeLLC > 0)
+              {
+                //sCount += av[i]->count;
+                //sCumulative += av[i]->cumulativeLLC;
+                //sMax = max (av[i]->maxLLC, sMax);
+                //sMin = min (av[i]->minLLC, sMin);
+
+                if (lastcsid != 0 && lastcsid != av[i]->csid)
+                  fprintf (fp, "\n");
+
+                fprintf (fp,
+		    fmt_str[0],
+                    &(mpiPi.lookup[av[i]->op - mpiPi_BASE].name[4]),
+                    av[i]->csid, av[i]->rank, av[i]->count,
+                    av[i]->maxLLC,
+                    av[i]->cumulativeLLC / av[i]->count,
+                    av[i]->minLLC, av[i]->cumulativeLLC);
+
+                lastcsid = av[i]->csid;
+              }
+          }
+
+        //if (sCumulative > 0)
+        //  {
+        //    fprintf (fp,
+        //        fmt_str[1],
+        //        &(mpiPi.lookup[av[i - 1]->op - mpiPi_BASE].name[4]),
+        //        av[i - 1]->csid, "*", sCount, sMax,
+        //        sCumulative / sCount, sMin, sCumulative);
+        //  }
+      }
+
+      free (av);
+    }
+}
+
+#endif
+
 static void
 mpiPi_print_all_callsite_time_info (FILE * fp)
 {
@@ -2925,6 +3010,7 @@ mpiPi_profile_print_concise (FILE * fp)
               mpiPi_print_concise_callsite_sent_info (fp);
               mpiPi_print_concise_callsite_io_info (fp);
               mpiPi_print_concise_callsite_rma_info (fp);
+	      mpiPi_print_all_callsite_llc_info (fp);
             }
         }
     }
@@ -2994,6 +3080,7 @@ mpiPi_profile_print_verbose (FILE * fp)
               mpiPi_print_all_callsite_sent_info (fp);
               mpiPi_print_all_callsite_io_info (fp);
               mpiPi_print_all_callsite_rma_info (fp);
+	      mpiPi_print_all_callsite_llc_info (fp);
             }
         }
     }

@@ -19,6 +19,10 @@ static char *svnid = "$Id$";
 #include <unistd.h>
 #include "mpiPi.h"
 
+#ifdef WITH_PAPI
+#include "mpiPi_papi.h"
+#endif
+
 mpiPi_fortran_t mpiPi_fortran;
 
 
@@ -181,6 +185,10 @@ mpiPi_init (char *appName, mpiPi_thr_mode_t thr_mode)
     {
       mpiPi_stats_mt_timer_start(&mpiPi.task_stats);
     }
+
+#ifdef WITH_PAPI
+  papi_module_init();
+#endif
 
   return;
 }
@@ -803,6 +811,10 @@ mpiPi_finalize ()
   if (mpiPi.global_task_hostnames != NULL)
     free (mpiPi.global_task_hostnames);
 
+#ifdef WITH_PAPI
+  papi_module_finalize();
+#endif
+
   /*  Could do a lot of housekeeping before calling PMPI_Finalize()
    *  but is it worth the additional work?
    *  For instance:
@@ -816,20 +828,30 @@ mpiPi_finalize ()
 
   return;
 }
-
-
+#ifdef WITH_PAPI
+void
+mpiPi_update_callsite_stats (mpiPi_mt_stat_tls_t *tls,
+                             unsigned op, unsigned rank, void **pc,
+                             double dur, double sendSize, double ioSize,
+                             double rmaSize, long long llc_cnt)
+#else
 void
 mpiPi_update_callsite_stats (mpiPi_mt_stat_tls_t *tls,
                              unsigned op, unsigned rank, void **pc,
                              double dur, double sendSize, double ioSize,
                              double rmaSize)
+#endif
 {
   int i;
   callsite_stats_t *csp = NULL;
   callsite_stats_t key;
-
+#ifdef WITH_PAPI
+  mpiPi_stats_mt_cs_upd(tls, op, rank, pc, dur,
+                        sendSize, ioSize, rmaSize,llc_cnt);
+#else
   mpiPi_stats_mt_cs_upd(tls, op, rank, pc, dur,
                         sendSize, ioSize, rmaSize);
+#endif
 }
 
 void

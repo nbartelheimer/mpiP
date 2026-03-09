@@ -37,6 +37,11 @@ typedef struct _callsite_stats
   double cumulativeDataSent;
   double cumulativeIO;
   double cumulativeRMA;
+#ifdef WITH_PAPI
+  long long minLLC;
+  long long maxLLC;
+  long long cumulativeLLC;
+#endif
   long long arbitraryMessageCount;
   double *siteData;
   int siteDataIdx;
@@ -55,10 +60,16 @@ void mpiPi_cs_init(callsite_stats_t *csp, void *pc[],
                    unsigned op, unsigned rank);
 void mpiPi_cs_reset_stat(callsite_stats_t *csp);
 void mpiPi_cs_merge(callsite_stats_t *dst, callsite_stats_t *src);
+
+#ifdef WITH_PAPI
+void mpiPi_cs_update(callsite_stats_t *csp, double dur,
+                     double sendSize, double ioSize, double rmaSize,
+                     double threshold, long long llc_cnt);
+#else
 void mpiPi_cs_update(callsite_stats_t *csp, double dur,
                      double sendSize, double ioSize, double rmaSize,
                      double threshold);
-
+#endif
 /*
  * Callsite caching
  */

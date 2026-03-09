@@ -41,11 +41,17 @@ mpiPi_mt_stat_tls_t *mpiPi_stats_mt_gettls(mpiPi_mt_stat_t *mt_state);
 
 void mpiPi_stats_mt_cs_gather(mpiPi_mt_stat_t *stat,
                              int *ac, callsite_stats_t ***av );
+#ifdef WITH_PAPI
+void mpiPi_stats_mt_cs_upd (mpiPi_mt_stat_tls_t *hndl,
+                            unsigned op, unsigned rank, void **pc,
+                            double dur, double sendSize, double ioSize,
+                            double rmaSize, long long llc_cnt);
+#else
 void mpiPi_stats_mt_cs_upd (mpiPi_mt_stat_tls_t *hndl,
                             unsigned op, unsigned rank, void **pc,
                             double dur, double sendSize, double ioSize,
                             double rmaSize);
-
+#endif
 void mpiPi_stats_mt_cs_lookup(mpiPi_mt_stat_t *stat,
                               callsite_stats_t *task_stats,
                               callsite_stats_t **task_lookup,

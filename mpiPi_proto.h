@@ -38,11 +38,19 @@ extern int h_gather_data (h_t * ht, int *ac, void ***ptr);
 extern void mpiPi_init (char *appName, mpiPi_thr_mode_t thr_mode);
 extern void mpiPi_generateReport (int report_style);
 extern void mpiPi_finalize (void);
+#ifdef WITH_PAPI
+extern void mpiPi_update_callsite_stats (mpiPi_mt_stat_tls_t *hndl,
+                                         unsigned op, unsigned rank,
+                                         void **pc, double dur,
+                                         double sendSize, double ioSize,
+                                         double rmaSize, long long llc_cnt);
+#else
 extern void mpiPi_update_callsite_stats (mpiPi_mt_stat_tls_t *hndl,
                                          unsigned op, unsigned rank,
                                          void **pc, double dur,
                                          double sendSize, double ioSize,
                                          double rmaSize);
+#endif
 extern char *mpiPdemangle (const char *mangledSym);
 extern int mpiP_find_src_loc (void *i_addr_hex, char **o_file_str,
                               int *o_lineno, char **o_funct_str);

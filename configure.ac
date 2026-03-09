@@ -94,6 +94,45 @@ AC_ARG_WITH(bin-type-flag,
 )
 AC_SUBST(BIN_TYPE_FLAG)
 
+dnl --------------------------------------------------
+dnl Check for PAPI library
+dnl --------------------------------------------------
+AC_ARG_WITH([papi],
+  [AS_HELP_STRING([--with-papi=DIR], [root directory of PAPI installation])],
+  [PAPI_DIR="$withval"],
+  [PAPI_DIR=""])
+
+USE_PAPI=no
+PAPI_CFLAGS=""
+PAPI_LIBS=""
+
+if test "x$PAPI_DIR" != "x"; then
+  PAPI_CFLAGS="-I$PAPI_DIR/include"
+  PAPI_LIBS="-L$PAPI_DIR/lib -lpapi"
+fi
+
+save_CPPFLAGS="$CPPFLAGS"
+save_LIBS="$LIBS"
+
+CPPFLAGS="$CPPFLAGS $PAPI_CFLAGS"
+LIBS="$LIBS $PAPI_LIBS"
+
+AC_CHECK_HEADER([papi.h], [
+  AC_CHECK_LIB([papi], [PAPI_library_init], [
+    USE_PAPI=yes
+    PAPI_LIBS="$PAPI_LIBS -lpapi"
+    AC_DEFINE([WITH_PAPI], [1], [Define if PAPI library is available])
+  ])
+])
+
+CPPFLAGS="$save_CPPFLAGS"
+LIBS="$save_LIBS"
+
+AC_SUBST([USE_PAPI])
+AC_SUBST([PAPI_CFLAGS])
+AC_SUBST([PAPI_LIBS])
+
+
 #
 # Timer options
 #
