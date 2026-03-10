@@ -4117,7 +4117,6 @@ $as_echo "$ac_cv_lib_papi_PAPI_library_init" >&6; }
 if test "x$ac_cv_lib_papi_PAPI_library_init" = xyes; then :
 
     USE_PAPI=yes
-    PAPI_LIBS="$PAPI_LIBS -lpapi"
 
 $as_echo "#define WITH_PAPI 1" >>confdefs.h
 
@@ -7815,7 +7814,9 @@ echo
 echo "  Timer                    : ${TIMER_NAME}"
 echo "  Stack Unwinding          : ${UNWIND_WITH}"
 echo "  Address to Source Lookup : ${SOURCE_LOOKUP}"
-echo "	PAPI                     : ${PAPI_LIBS}"
+echo
+echo "  PAPI                     : ${PAPI_LIBS}"
+echo "  PAPI include             : ${PAPI_CFLAGS}"
 echo
 echo "  MPI-I/O support          : ${ENABLE_MPI_IO}"
 echo "  MPI-RMA support          : ${ENABLE_MPI_RMA}"

@@ -40,6 +40,7 @@ FORTRAN_VARS_OBJ=fortran_vars.o
 
 ifeq (${USE_PAPI},yes)
 	LIBS += @PAPI_LIBS@
+	CFLAGS += @PAPI_CFLAGS@
 endif
 
 SRCS =	diag_msgs.c \

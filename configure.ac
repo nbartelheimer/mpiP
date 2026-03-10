@@ -94,9 +94,6 @@ AC_ARG_WITH(bin-type-flag,
 )
 AC_SUBST(BIN_TYPE_FLAG)
 
-dnl --------------------------------------------------
-dnl Check for PAPI library
-dnl --------------------------------------------------
 AC_ARG_WITH([papi],
   [AS_HELP_STRING([--with-papi=DIR], [root directory of PAPI installation])],
   [PAPI_DIR="$withval"],
@@ -120,7 +117,6 @@ LIBS="$LIBS $PAPI_LIBS"
 AC_CHECK_HEADER([papi.h], [
   AC_CHECK_LIB([papi], [PAPI_library_init], [
     USE_PAPI=yes
-    PAPI_LIBS="$PAPI_LIBS -lpapi"
     AC_DEFINE([WITH_PAPI], [1], [Define if PAPI library is available])
   ])
 ])
@@ -957,6 +953,7 @@ echo "  Stack Unwinding          : ${UNWIND_WITH}"
 echo "  Address to Source Lookup : ${SOURCE_LOOKUP}"
 echo
 echo "  PAPI                     : ${PAPI_LIBS}"
+echo "  PAPI include             : ${PAPI_CFLAGS}"
 echo
 echo "  MPI-I/O support          : ${ENABLE_MPI_IO}"
 echo "  MPI-RMA support          : ${ENABLE_MPI_RMA}"
