@@ -1281,7 +1281,7 @@ def CreateWrapper(funct, olist):
         olist.extend(fdict[funct].wrapperPreList)
 
     # capture timer
-    olist.append("papi_start_collect();\n mpiPi_GETTIME (&start);\n" )
+    olist.append("\n mpiPi_GETTIME (&start);\npapi_start_collect();\n" )
 
     # capture call stack
     olist.append("if ( mpiPi.reportStackDepth > 0 ) mpiPi_RecordTraceBack((*base_jbuf), call_stack, mpiPi.fullStackDepth);\n"  )
