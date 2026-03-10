@@ -18,6 +18,8 @@ VPATH = ${srcdir}
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
 docdir=@docdir@
 
+USE_PAPI = @USE_PAPI@
+
 include Defs.mak
 
 .PHONY: default all clean api API shared proto cleanobjs test testing \
@@ -36,6 +38,10 @@ PC_LOOKUP_OBJ = $(PC_LOOKUP_FILE:.c=.o)
 FORTRAN_VARS_FILE=fortran_vars.f
 FORTRAN_VARS_OBJ=fortran_vars.o
 
+ifeq (${USE_PAPI},yes)
+	LIBS += @PAPI_LIBS@
+endif
+
 SRCS =	diag_msgs.c \
 	mpiP-hash.c \
 	mpiP-callsites.c \
@@ -43,7 +49,6 @@ SRCS =	diag_msgs.c \
 	mpiP-mt-stats.c \
 	mpiP-tslist.c \
 	glob.c \
-	mpiPi_papi.c \
 	mpiP-wrappers.c \
 	wrappers_special.c \
 	mpiPi.c \
@@ -55,6 +60,10 @@ SRCS =	diag_msgs.c \
 	record_stack.c \
 	$(FORTRAN_VARS_OBJ) \
 	${PC_LOOKUP_FILE}
+
+ifeq (${USE_PAPI}, yes)
+	SRCS += mpiPi_papi.c
+endif
 
 API_SRCS =	diag_msgs_api.c \
 	mpiP-hash.c \
@@ -248,7 +257,6 @@ endif
 #  parallel builds tend to fail.
 .NOTPARALLEL:
 
-USE_PAPI = @USE_PAPI@
 ifeq ($(USE_PAPI), yes)
 mpiP-wrappers.c symbols.h lookup.c mpiPi_def.h: mpi.protos.txt make-wrappers-with-papi.py
 	$(PYTHON) $(srcdir)/make-wrappers-with-papi.py $(MAKE_WRAPPERS_ARGS) --arch=$(ARCH) --f77symbol $(F77_SYMBOLS) $^

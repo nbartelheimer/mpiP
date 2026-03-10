@@ -956,6 +956,8 @@ echo "  Timer                    : ${TIMER_NAME}"
 echo "  Stack Unwinding          : ${UNWIND_WITH}"
 echo "  Address to Source Lookup : ${SOURCE_LOOKUP}"
 echo
+echo "  PAPI                     : ${PAPI_LIBS}"
+echo
 echo "  MPI-I/O support          : ${ENABLE_MPI_IO}"
 echo "  MPI-RMA support          : ${ENABLE_MPI_RMA}"
 echo "  MPI-NBC support          : ${ENABLE_MPI_NONBLOCKINGCOLLECTIVES}"
